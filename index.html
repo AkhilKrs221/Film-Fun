@@ -1,0 +1,164 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILM FUN - Movie Games & Puzzles</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .game-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid :text-red-500 fa-film text-3xl text-red-500"></i>
+                <h1 class="text-2xl font-black tracking-wider text-white">FILM <span class="text-red-500">FUN</span></h1>
+            </div>
+            
+            <!-- Industry Selection Tabs -->
+            <nav id="industry-tabs" class="flex flex-wrap gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <button onclick="switchIndustry('hollywood')" id="tab-hollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition active bg-red-600 text-white">Hollywood</button>
+                <button onclick="switchIndustry('bollywood')" id="tab-bollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Bollywood</button>
+                <button onclick="switchIndustry('tollywood')" id="tab-tollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Tollywood</button>
+                <button onclick="switchIndustry('kollywood')" id="tab-kollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Kollywood</button>
+                <button onclick="switchIndustry('mollywood')" id="tab-mollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Mollywood</button>
+                <button onclick="switchIndustry('korean')" id="tab-korean" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Korean</button>
+            </nav>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-sm font-semibold bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <span class="text-amber-400"><i class="fa-solid fa-trophy mr-1"></i> Score:</span> <span id="global-score">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Playground Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+        
+        <!-- Game Modes Grid Selection (Shown when no game is active) -->
+        <div id="modes-selection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Mode 1: Guess by Cast -->
+            <div onclick="startGame('cast')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 text-xl mb-4">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Guess from Cast</h3>
+                <p class="text-slate-400 text-sm">Can you identify the film based exclusively on its starring ensemble cast?</p>
+            </div>
+
+            <!-- Mode 2: Guess by Shot -->
+            <div onclick="startGame('shot')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 text-xl mb-4">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Guess from Movie Shot</h3>
+                <p class="text-slate-400 text-sm">Name the movie using a single cinematic landscape or iconic frame scene.</p>
+            </div>
+
+            <!-- Mode 3: Guess by Poster -->
+            <div onclick="startGame('poster')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-xl mb-4">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Guess from Poster</h3>
+                <p class="text-slate-400 text-sm">Recognize the movie through its standard promotional poster design artwork.</p>
+            </div>
+
+            <!-- Mode 4: Guess by Quote -->
+            <div onclick="startGame('quote')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xl mb-4">
+                    <i class="fa-solid fa-quote-left"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Guess from Quote</h3>
+                <p class="text-slate-400 text-sm">Match the legendary dialogues and famous catchphrases to the correct movie title.</p>
+            </div>
+
+            <!-- Mode 5: Guess by Partial Poster -->
+            <div onclick="startGame('partialPoster')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl mb-4">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Partial Posters</h3>
+                <p class="text-slate-400 text-sm">An ultra challenge! Guess the movie with a heavily cropped or obscured poster.</p>
+            </div>
+
+            <!-- Mode 6: Guess by Text Fragment -->
+            <div onclick="startGame('text')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-xl mb-4">
+                    <i class="fa-solid fa-font"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Partial Text Title</h3>
+                <p class="text-slate-400 text-sm">Fill in the blanks. Identify the film from snippets or missing letters in its name.</p>
+            </div>
+
+            <!-- Mode 7: Weirdly Explained Plot -->
+            <div onclick="startGame('plot')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5 md:col-span-2 lg:col-span-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 text-xl mb-4">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Weirdly Explained Plots</h3>
+                <p class="text-slate-400 text-sm">Hilariously bad and completely out-of-context descriptions of popular screenplays.</p>
+            </div>
+        </div>
+
+        <!-- Active Interface Stage Screen -->
+        <div id="game-arena" class="hidden max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="exitGame()" class="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Modes
+                </button>
+                <span id="active-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">
+                    Mode
+                </span>
+            </div>
+
+            <!-- Context Hint Delivery Block -->
+            <div id="hint-display-container" class="mb-8 min-h-[160px] flex flex-col items-center justify-center text-center bg-slate-950 rounded-2xl p-6 border border-slate-800">
+                <!-- Visual Hints Content (Images) -->
+                <img id="hint-image" src="" alt="Hint Asset" class="hidden max-h-64 object-contain rounded-xl mb-2 border border-slate-700 shadow-md">
+                <!-- Text-Based Hint Fields -->
+                <p id="hint-text" class="text-xl font-medium text-slate-200 whitespace-pre-line leading-relaxed"></p>
+            </div>
+
+            <!-- Input Interaction and Guess Form Submission System -->
+            <div class="space-y-4">
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
+                    <!-- Dynamic Interactive MCQ selection options render here -->
+                </div>
+
+                <div id="text-input-container" class="hidden">
+                    <input type="text" id="user-text-guess" placeholder="Type full movie title guess here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition mb-3">
+                    <button onclick="submitTextGuess()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-red-600/10">Submit Guess</button>
+                </div>
+                
+                <!-- Match Result Indicator Notification Alert -->
+                <div id="feedback-alert" class="hidden p-4 rounded-xl font-semibold text-center border"></div>
+                
+                <button id="next-btn" onclick="loadQuestion()" class="hidden w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 rounded-xl transition">
+                    Next Challenge <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-center py-6 text-sm text-slate-500">
+        <p>&copy; 2026 FILM FUN Dashboard. Built for Cinema Lovers.</p>
+    </footer>
+
+    <!-- Movie Repository Engine Data Asset Script Connection Block -->
+    <script src="app.js"></script>
+    <!-- Insert data script before core orchestration script -->
+    <script src="movies-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
