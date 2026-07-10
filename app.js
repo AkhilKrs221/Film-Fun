@@ -1,3 +1,4 @@
+import { movies } from './movies-data.js';
 let currentIndustry = 'hollywood';
 let currentMode = '';
 let globalScore = 0;
