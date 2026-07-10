@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,13 +18,13 @@
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <i class="fa-solid :text-red-500 fa-film text-3xl text-red-500"></i>
+                <i class="fa-solid fa-film text-3xl text-red-500"></i>
                 <h1 class="text-2xl font-black tracking-wider text-white">FILM <span class="text-red-500">FUN</span></h1>
             </div>
             
             <!-- Industry Selection Tabs -->
             <nav id="industry-tabs" class="flex flex-wrap gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
-                <button onclick="switchIndustry('hollywood')" id="tab-hollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition active bg-red-600 text-white">Hollywood</button>
+                <button onclick="switchIndustry('hollywood')" id="tab-hollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition bg-red-600 text-white">Hollywood</button>
                 <button onclick="switchIndustry('bollywood')" id="tab-bollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Bollywood</button>
                 <button onclick="switchIndustry('tollywood')" id="tab-tollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Tollywood</button>
                 <button onclick="switchIndustry('kollywood')" id="tab-kollywood" class="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white">Kollywood</button>
@@ -83,7 +84,7 @@
 
             <!-- Mode 5: Guess by Partial Poster -->
             <div onclick="startGame('partialPoster')" class="game-card bg-slate-900 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/5">
-                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl mb-4">
+                <div class="w-12 h-12 rounded-xl bg-cyan-400/10 flex items-center justify-center text-cyan-400 text-xl mb-4">
                     <i class="fa-solid fa-eye-slash"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-2">Partial Posters</h3>
@@ -130,7 +131,8 @@
 
             <!-- Input Interaction and Guess Form Submission System -->
             <div class="space-y-4">
-                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
+                <!-- FIX 1: Removed the "hidden" class so option buttons can be seen when appended -->
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Dynamic Interactive MCQ selection options render here -->
                 </div>
 
@@ -155,10 +157,7 @@
         <p>&copy; 2026 FILM FUN Dashboard. Built for Cinema Lovers.</p>
     </footer>
 
-    <!-- Movie Repository Engine Data Asset Script Connection Block -->
-    <script src="app.js"></script>
-    <!-- Insert data script before core orchestration script -->
-    <script src="./movies-data.js"></script>
-    <script src="./app.js"></script>
+    <!-- FIX 2: Replaced complex duplicate script calls with a single unified module script setup -->
+    <script type="module" src="./app.js"></script>
 </body>
 </html>
