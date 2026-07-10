@@ -1,10 +1,17 @@
 import { movies } from './movies-data.js';
+
 let currentIndustry = 'hollywood';
 let currentMode = '';
 let globalScore = 0;
 let currentChallengeData = null;
 
+// FIX: Initialize the catalogs directly from your imported movies data object
+const fullMovieCatalog = movies || {};
+// Fallback array if you have a distinct global quotes object inside movies
+const globalQuotesDatabase = movies.quotes || []; 
+
 function getRandomElement(arr) {
+    if (!arr || arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -18,10 +25,14 @@ function shuffleArray(arr) {
 }
 
 function switchIndustry(industryId) {
-    currentIndustry = industryId;
+    // FIX: Safely force the industry ID to lowercase to match movies-data.js keys perfectly
+    currentIndustry = industryId.toLowerCase();
+    
     document.querySelectorAll('#industry-tabs button').forEach(btn => {
         btn.className = "px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition text-slate-400 hover:text-white";
     });
+    
+    // UI lookups use the original ID case mapping
     const activeBtn = document.getElementById(`tab-${industryId}`);
     if (activeBtn) activeBtn.className = "px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition bg-red-600 text-white";
     exitGame();
@@ -30,6 +41,8 @@ function switchIndustry(industryId) {
 function generateDynamicQuestion(industry, mode) {
     if (mode === 'quote') {
         const selectedQuote = getRandomElement(globalQuotesDatabase);
+        if (!selectedQuote) return { hint: "No quotes available", answer: "", options: [] };
+        
         let wrongOptions = globalQuotesDatabase.filter(m => m.answer !== selectedQuote.answer).map(m => m.answer);
         wrongOptions = Array.from(new Set(wrongOptions));
         wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
@@ -40,8 +53,13 @@ function generateDynamicQuestion(industry, mode) {
         };
     }
 
-    // Pull from the exact same 100-movie pool for this industry
-    const targetCatalog = fullMovieCatalog[industry] || fullMovieCatalog['hollywood'];
+    // Pull from the parsed 100-movie pool for this industry safely
+    const targetCatalog = fullMovieCatalog[industry] || fullMovieCatalog['hollywood'] || [];
+    
+    if (targetCatalog.length === 0) {
+        return { hint: "No movie data available for this category.", answer: "", options: ["", "", "", ""] };
+    }
+
     const selectedItem = getRandomElement(targetCatalog);
     let wrongOptions = targetCatalog.filter(m => m.title !== selectedItem.title).map(m => m.title);
     wrongOptions = Array.from(new Set(wrongOptions));
@@ -52,14 +70,15 @@ function generateDynamicQuestion(industry, mode) {
     
     switch(mode) {
         case 'cast':
-            descriptiveHint = `IMDb Core Billing Cast:\n\n• ${selectedItem.cast[0]}\n• ${selectedItem.cast[1]}\n• ${selectedItem.cast[2]}\n• ${selectedItem.cast[3]}`;
+            // Added safe check arrays fallback so it won't crash if a movie has fewer than 4 actors listed
+            const castList = selectedItem.cast || ["Unknown Actor", "Unknown Actor", "Unknown Actor", "Unknown Actor"];
+            descriptiveHint = `IMDb Core Billing Cast:\n\n• ${castList[0] || 'N/A'}\n• ${castList[1] || 'N/A'}\n• ${castList[2] || 'N/A'}\n• ${castList[3] || 'N/A'}`;
             break;
         case 'plot':
-            descriptiveHint = `🥴 Weirdly Explained Plot:\n\n"${selectedItem.plot}"`;
+            descriptiveHint = `🥴 Weirdly Explained Plot:\n\n"${selectedItem.plot || 'No plot summary available.'}"`;
             break;
         case 'text':
-            // Dynamically masks alternating letters to simulate a cropped typography poster slice
-            descriptiveHint = selectedItem.title.split('').map((char, idx) => {
+            descriptiveHint = (selectedItem.title || "").split('').map((char, idx) => {
                 if (char === ' ') return '   ';
                 if (['A','E','I','O','U',' '].includes(char.toUpperCase()) || idx % 2 === 0) {
                     return ` ${char} `;
@@ -68,19 +87,17 @@ function generateDynamicQuestion(industry, mode) {
             }).join('');
             break;
         case 'shot':
-            // High-res film set frames pulled dynamically via keyword queries
-            descriptiveHint = `https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop&sig=${selectedItem.id}&key=${selectedItem.keyword}`;
+            descriptiveHint = `https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop&sig=${selectedItem.id || 0}&key=${selectedItem.keyword || 'movie'}`;
             break;
         case 'poster':
         case 'partialPoster':
-            // Base theater poster backdrop
-            descriptiveHint = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop&sig=${selectedItem.id}&mode=poster`;
+            descriptiveHint = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop&sig=${selectedItem.id || 0}&mode=poster`;
             break;
     }
 
     return {
         hint: descriptiveHint,
-        answer: selectedItem.title,
+        answer: selectedItem.title || "Unknown Title",
         options: compiledOptions
     };
 }
@@ -111,65 +128,86 @@ function loadQuestion() {
     const imgNode = document.getElementById('hint-image');
     const textNode = document.getElementById('hint-text');
     
-    imgNode.classList.add('hidden');
-    imgNode.style.clipPath = "none"; 
-    imgNode.style.transform = "none";
-    textNode.classList.add('hidden');
+    if (imgNode) {
+        imgNode.classList.add('hidden');
+        imgNode.style.clipPath = "none"; 
+        imgNode.style.transform = "none";
+    }
+    if (textNode) textNode.classList.add('hidden');
     
     currentChallengeData = generateDynamicQuestion(currentIndustry, currentMode);
     
     if (currentMode === 'shot' || currentMode === 'poster' || currentMode === 'partialPoster') {
-        imgNode.src = currentChallengeData.hint;
-        imgNode.classList.remove('hidden');
-        
-        if (currentMode === 'partialPoster') {
-            // Clips a highly specific, recognizable center viewing hole into the image element
-            imgNode.style.clipPath = "circle(18% at 50% 40%)";
-            imgNode.style.transform = "scale(1.5)";
+        if (imgNode) {
+            imgNode.src = currentChallengeData.hint;
+            imgNode.classList.remove('hidden');
+            if (currentMode === 'partialPoster') {
+                imgNode.style.clipPath = "circle(18% at 50% 40%)";
+                imgNode.style.transform = "scale(1.5)";
+            }
         }
     } else {
-        textNode.innerText = currentChallengeData.hint;
-        textNode.classList.remove('hidden');
+        if (textNode) {
+            textNode.innerText = currentChallengeData.hint;
+            textNode.classList.remove('hidden');
+        }
     }
     
     const optionsBox = document.getElementById('options-container');
-    optionsBox.innerHTML = '';
-    
-    currentChallengeData.options.forEach(option => {
-        const btn = document.createElement('button');
-        btn.className = "bg-slate-900 hover:bg-slate-800 border border-slate-800 text-left px-4 py-3.5 rounded-xl font-medium text-sm text-slate-200 transition focus:outline-none";
-        btn.innerText = option;
-        btn.onclick = () => submitOptionGuess(option, btn);
-        optionsBox.appendChild(btn);
-    });
+    if (optionsBox) {
+        optionsBox.innerHTML = '';
+        currentChallengeData.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.className = "bg-slate-900 hover:bg-slate-800 border border-slate-800 text-left px-4 py-3.5 rounded-xl font-medium text-sm text-slate-200 transition focus:outline-none";
+            btn.innerText = option;
+            btn.onclick = () => submitOptionGuess(option, btn);
+            optionsBox.appendChild(btn);
+        });
+    }
 }
 
 function submitOptionGuess(selectedOption, buttonNode) {
-    const buttons = document.getElementById('options-container').querySelectorAll('button');
-    buttons.forEach(b => b.disabled = true);
+    const optionsContainer = document.getElementById('options-container');
+    if (optionsContainer) {
+        const buttons = optionsContainer.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+    }
     
     const alertBox = document.getElementById('feedback-alert');
-    alertBox.classList.remove('hidden');
+    if (alertBox) alertBox.classList.remove('hidden');
     
-    // Instantly reveal the full unmasked poster so the player can see what it was!
     const imgNode = document.getElementById('hint-image');
-    imgNode.style.clipPath = "none";
-    imgNode.style.transform = "none";
+    if (imgNode) {
+        imgNode.style.clipPath = "none";
+        imgNode.style.transform = "none";
+    }
     
     if (selectedOption === currentChallengeData.answer) {
         buttonNode.className = "bg-emerald-500/10 border-emerald-500 text-emerald-400 text-left px-4 py-3.5 rounded-xl font-medium text-sm focus:outline-none border";
-        alertBox.className = "p-4 rounded-xl font-semibold text-center border bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
-        alertBox.innerHTML = '✨ Correct! Excellent cinematic knowledge.';
+        if (alertBox) {
+            alertBox.className = "p-4 rounded-xl font-semibold text-center border bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+            alertBox.innerHTML = '✨ Correct! Excellent cinematic knowledge.';
+        }
         updateScore(10);
     } else {
         buttonNode.className = "bg-red-500/10 border-red-500 text-red-400 text-left px-4 py-3.5 rounded-xl font-medium text-sm focus:outline-none border";
-        alertBox.className = "p-4 rounded-xl font-semibold text-center border bg-red-500/10 border-red-500/20 text-red-400";
-        alertBox.innerHTML = `❌ Wrong! The correct answer was: <strong>${currentChallengeData.answer}</strong>`;
+        if (alertBox) {
+            alertBox.className = "p-4 rounded-xl font-semibold text-center border bg-red-500/10 border-red-500/20 text-red-400";
+            alertBox.innerHTML = `❌ Wrong! The correct answer was: <strong>${currentChallengeData.answer}</strong>`;
+        }
     }
-    document.getElementById('next-btn').classList.remove('hidden');
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) nextBtn.classList.remove('hidden');
 }
 
 function updateScore(points) {
     globalScore += points;
-    document.getElementById('global-score').innerText = globalScore;
+    const scoreNode = document.getElementById('global-score');
+    if (scoreNode) scoreNode.innerText = globalScore;
 }
+
+// Attach switchIndustry to window context if tabs use inline html attributes (e.g., onclick="switchIndustry('hollywood')")
+window.switchIndustry = switchIndustry;
+window.startGame = startGame;
+window.exitGame = exitGame;
+window.loadQuestion = loadQuestion;
